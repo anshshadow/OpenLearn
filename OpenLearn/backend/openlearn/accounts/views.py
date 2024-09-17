@@ -10,6 +10,47 @@ from rest_framework.exceptions import AuthenticationFailed
 import datetime
 from students.models import StudentProfile
 from instructors.models import InstructorProfile
+from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone
+
+
+class UserProfileView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        email1 = request.query_params.get('username1') 
+        print(email1)
+        user=User.objects.get(email='12345@gmail.com')
+        
+        # Assuming you have a serializer for the User model to format the response
+        user_data = {
+            'username': user.username,
+            'email': user.email,
+            'role': user.role,  # Assuming 'role' is a field in the User model
+        }
+
+        # Fetch additional profile data based on the user's role
+        if user.role == 'student':
+            try:
+                student_profile = StudentProfile.objects.get(user=user)
+                user_data['profile'] = {
+                    'enrolled_courses': [enrolled_courses.title for enrolled_courses in student_profile.enrolled_courses.all()]
+                }
+            except StudentProfile.DoesNotExist:
+                user_data['profile'] = 'No student profile found'
+
+        elif user.role == 'instructor':
+            try:
+                instructor_profile = InstructorProfile.objects.get(user=user)
+                user_data['profile'] = {
+                    'teaching_courses': [course.title for course in instructor_profile.courses.all()],
+                    'experience': instructor_profile.experience,  # Assuming an experience field exists
+                }
+            except InstructorProfile.DoesNotExist:
+                user_data['profile'] = 'No instructor profile found'
+
+        # Return the user data
+        return Response(user_data)
 
 class RegisterView(APIView):
     def post(self, request):
@@ -46,13 +87,13 @@ class LoginView(APIView):
 
         payload = {
             'id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-            'iat': datetime.datetime.utcnow(),
+            'exp': timezone.now() + datetime.timedelta(minutes=60),
+            'iat': timezone.now(),
         }
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
         response = Response()
-        response.set_cookie(key='jwt', value=token, httponly=True)
+        response.set_cookie(key='jwt', value=token)
         response.data = {
             'token': token,
             'role': user.role

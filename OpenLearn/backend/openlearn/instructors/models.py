@@ -11,7 +11,7 @@ class InstructorProfile(models.Model):
     social_links = models.JSONField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.first_name} {self.user.last_name}"
+        return f"{self.user.username}"
 
 class Course(models.Model):
     title = models.CharField(max_length=200)
