@@ -5,6 +5,7 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = '__all__'
+        
 
 class InstructorProfileSerializer(serializers.ModelSerializer):
     courses = CourseSerializer(many=True, read_only=True)

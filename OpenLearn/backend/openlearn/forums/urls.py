@@ -9,5 +9,5 @@ router.register(r'posts', ForumPostViewSet, basename='forumpost')
 
 # Include the router's URLs in your urlpatterns
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]

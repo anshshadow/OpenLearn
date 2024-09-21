@@ -7,7 +7,7 @@ class InstructorProfile(models.Model):
     bio = models.TextField()
     profile_picture = models.ImageField(upload_to='instructor_pictures/', blank=True, null=True)
     qualifications = models.TextField()
-    experience = models.IntegerField(help_text="Years of experience")
+    experience = models.IntegerField(help_text="Years of experience",default=3)
     social_links = models.JSONField(blank=True, null=True)
 
     def __str__(self):

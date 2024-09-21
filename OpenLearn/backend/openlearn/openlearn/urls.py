@@ -23,6 +23,6 @@ urlpatterns = [
     path('api/', include('instructors.urls')),
     path('api/', include('students.urls')),
     path('api/accounts/', include('accounts.urls')),
-    # path('api/', include('forums.urls')), 
+    path('api/', include('forums.urls')), 
 ]
 

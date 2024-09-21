@@ -9,7 +9,8 @@ from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed
 import datetime
 from students.models import StudentProfile
-from instructors.models import InstructorProfile
+from instructors.models import InstructorProfile,Course
+from instructors.serializers import CourseSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 
@@ -20,7 +21,7 @@ class UserProfileView(APIView):
     def get(self, request):
         email1 = request.query_params.get('username1') 
         print(email1)
-        user=User.objects.get(email='12345@gmail.com')
+        user=User.objects.get(email=email1)
         
         # Assuming you have a serializer for the User model to format the response
         user_data = {
@@ -42,8 +43,14 @@ class UserProfileView(APIView):
         elif user.role == 'instructor':
             try:
                 instructor_profile = InstructorProfile.objects.get(user=user)
+                print(instructor_profile)
+                courses=Course.objects.filter(instructor=instructor_profile)
+                serializer1=CourseSerializer(courses,many=True)
+                # print(courses)
+                # print(serializer1.data)
+                print([course['title'] for course in serializer1.data])
                 user_data['profile'] = {
-                    'teaching_courses': [course.title for course in instructor_profile.courses.all()],
+                    'teaching_courses': [course['title'] for course in serializer1.data],
                     'experience': instructor_profile.experience,  # Assuming an experience field exists
                 }
             except InstructorProfile.DoesNotExist:

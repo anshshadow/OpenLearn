@@ -3,6 +3,11 @@ from .models import Course, Lesson
 from .serializers import CourseSerializer, LessonSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, status
+from .models import Course
+from instructors.models import InstructorProfile
+
 
 class CourseListView(generics.ListAPIView):
     queryset = Course.objects.all()
@@ -50,3 +55,27 @@ class LessonListView(generics.ListCreateAPIView):
 class LessonDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+
+class CourseViewSet(viewsets.ModelViewSet):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+
+    def create(self, request, *args, **kwargs):
+        instructor_email = request.data.get('instructor_email')  # Get the instructor email from request
+
+        # Look up the instructor profile by email
+        instructor_profile = get_object_or_404(InstructorProfile, user__email=instructor_email)
+
+        # Create the course object with the instructor
+        course = Course(
+            title=request.data['title'],
+            description=request.data['description'],
+            duration=request.data['duration'],
+            level=request.data['level'],
+            language=request.data['language'],
+            syllabus=request.data['syllabus'],
+            instructor=instructor_profile  # Set the instructor using the profile
+        )
+        course.save()  # Save the course instance
+        serializer = self.get_serializer(course)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
